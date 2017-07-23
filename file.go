@@ -2,6 +2,7 @@ package midi
 
 import (
 	"errors"
+	"io"
 	"os"
 	"strings"
 )
@@ -88,9 +89,19 @@ func (f *File) Save(filename string) error {
 	if err != nil {
 		return err
 	}
-	_, err = ff.Write([]byte(f.Bytes()))
+	_, err = ff.Write(f.Bytes())
 	if err != nil {
 		return err
 	}
 	return ff.Close()
+}
+
+// Encode writes f to w
+func (f *File) Encode(w io.Writer) (int, error) {
+	return w.Write(f.Bytes())
+}
+
+// Encode writes f to w
+func Encode(f *File, w io.Writer) (int, error) {
+	return f.Encode(w)
 }

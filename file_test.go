@@ -1,6 +1,7 @@
 package midi
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
 )
@@ -174,6 +175,111 @@ func TestFile_Save(t *testing.T) {
 			}
 			if err := f.Save(tt.args.filename); (err != nil) != tt.wantErr {
 				t.Errorf("File.Save() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestFile_Encode(t *testing.T) {
+	tr := NewTrack().
+		NoteOn(0, Note("c4"), nil, 0).
+		Chord(
+			2,
+			[]Pitchier{
+				Note("c5"),
+				Note("c3"),
+			},
+			4,
+			0,
+		).
+		NoteOff(3, Note("c2"), nil, 0)
+	f, _ := NewFile(DefaultTicks, tr)
+	type fields struct {
+		ticks  int
+		tracks []*Track
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		want    int
+		wantW   string
+		wantErr bool
+	}{
+		{
+			"file.encode",
+			fields{DefaultTicks, []*Track{tr}},
+			49,
+			string(f.Bytes()),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := &File{
+				ticks:  tt.fields.ticks,
+				tracks: tt.fields.tracks,
+			}
+			w := &bytes.Buffer{}
+			got, err := f.Encode(w)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("File.Encode() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("File.Encode() = %v, want %v", got, tt.want)
+			}
+			if gotW := w.String(); gotW != tt.wantW {
+				t.Errorf("File.Encode() = %v, want %v", gotW, tt.wantW)
+			}
+		})
+	}
+}
+
+func TestEncode(t *testing.T) {
+	tr := NewTrack().
+		NoteOn(0, Note("c4"), nil, 0).
+		Chord(
+			2,
+			[]Pitchier{
+				Note("c5"),
+				Note("c3"),
+			},
+			4,
+			0,
+		).
+		NoteOff(3, Note("c2"), nil, 0)
+	f, _ := NewFile(DefaultTicks, tr)
+	type args struct {
+		f *File
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int
+		wantW   string
+		wantErr bool
+	}{
+		{
+			"encode",
+			args{f},
+			49,
+			string(f.Bytes()),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &bytes.Buffer{}
+			got, err := Encode(tt.args.f, w)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Encode() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Encode() = %v, want %v", got, tt.want)
+			}
+			if gotW := w.String(); gotW != tt.wantW {
+				t.Errorf("Encode() = %v, want %v", gotW, tt.wantW)
 			}
 		})
 	}
