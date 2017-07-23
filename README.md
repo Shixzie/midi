@@ -7,4 +7,6 @@
 
 `midi` is the port of the [jsmidgen](jsmidgen) JavaScript package to Go!
 
+**Go 1.7+ required**
+
 [jsmidgen]: https://github.com/dingram/jsmidgen
